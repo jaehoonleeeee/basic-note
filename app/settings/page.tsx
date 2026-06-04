@@ -554,6 +554,19 @@ export default function SettingsPage() {
                   />
                 </div>
               ) : null}
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">
+                  {t("settings.version")}
+                </span>
+                <span className="flex items-baseline gap-1.5 tabular-nums">
+                  <span className="font-medium text-foreground">
+                    v{process.env.NEXT_PUBLIC_APP_DISPLAY_VERSION || "0.0.0"}
+                  </span>
+                  <span className="font-mono text-xs text-muted-foreground">
+                    {(process.env.NEXT_PUBLIC_APP_VERSION || "dev").slice(0, 7)}
+                  </span>
+                </span>
+              </div>
             </div>
           </div>
 
@@ -675,9 +688,6 @@ export default function SettingsPage() {
       <div className="text-center text-xs text-muted-foreground pb-6 space-y-1">
         <div>{t("settings.footer")}</div>
         <div>© 2026 PlusX basic note</div>
-        <div className="font-mono">
-          v{(process.env.NEXT_PUBLIC_APP_VERSION || "dev").slice(0, 7)}
-        </div>
       </div>
     </div>
   );

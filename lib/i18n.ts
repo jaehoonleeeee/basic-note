@@ -197,6 +197,7 @@ const ko = {
   "update.subtitle": "잠시만 기다려 주세요",
   "update.available": "새 버전이 나왔어요",
   "update.refresh": "지금 업데이트",
+  "settings.version": "버전",
 };
 
 const en: typeof ko = {
@@ -396,6 +397,7 @@ const en: typeof ko = {
   "update.subtitle": "Just a moment",
   "update.available": "A new version is available",
   "update.refresh": "Update now",
+  "settings.version": "Version",
 };
 
 export type TranslationKey = keyof typeof ko;
