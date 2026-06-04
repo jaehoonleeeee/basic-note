@@ -13,11 +13,10 @@
 
 본인 계정에 직접 띄우는 전체 절차는 **[SETUP.md](./SETUP.md)** 에 있습니다 (약 10분, 무료 플랜).
 
-원클릭 배포:
+설치 흐름: **이 저장소 [Fork](https://github.com/plusxdev/basic-note/fork) → 본인 Fork를 Vercel에 배포 → 자동 업데이트 켜기**
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fplusxdev%2Fbasic-note&env=NEXT_PUBLIC_SUPABASE_URL,NEXT_PUBLIC_SUPABASE_ANON_KEY&envDescription=Supabase%20%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8%EC%9D%98%20URL%EA%B3%BC%20anon%20key&envLink=https%3A%2F%2Fgithub.com%2Fplusxdev%2Fbasic-note%2Fblob%2Fmain%2FSETUP.md&project-name=basic-note&repository-name=basic-note)
-
-> 배포 전에 Supabase 프로젝트를 만들고 `supabase/setup.sql`을 실행해야 합니다. 순서와 환경변수는 [SETUP.md](./SETUP.md) 참고.
+> **Fork로 설치**해야 원본의 새 버전이 자동으로 따라오는 자동 업데이트가 동작합니다.
+> 배포 전에 Supabase 프로젝트를 만들고 `supabase/setup.sql`을 실행해야 합니다. 순서·환경변수·자동 업데이트 설정은 [SETUP.md](./SETUP.md) 참고.
 
 ---
 

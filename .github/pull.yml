@@ -1,0 +1,16 @@
+# Pull app (https://github.com/wei/pull) configuration.
+# Keeps an installer's fork automatically synced with this upstream repo so
+# code updates flow to their Vercel deployment without manual work.
+#
+# hardreset = the fork's main is reset to exactly match upstream main (pristine
+# mirror, no drift, no merge conflicts). Installers should NOT commit changes to
+# their fork's code — configuration lives in Vercel env vars, not the repo.
+#
+# Setup (one-time, by the installer): install the Pull app on the fork at
+# https://github.com/apps/pull — this file then drives the auto-sync.
+version: "1"
+rules:
+  - base: main
+    upstream: plusxdev:main
+    mergeMethod: hardreset
+    mergeUnstable: true

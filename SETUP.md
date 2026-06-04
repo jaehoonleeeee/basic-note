@@ -94,16 +94,26 @@
 
 ---
 
-## 🚀 2단계 — Vercel에 배포하기
+## 🚀 2단계 — Fork & Vercel 배포
 
-아래 버튼을 누르면 이 저장소가 본인 GitHub로 복제되고, 배포 과정에서 환경변수 입력 화면이 나옵니다.
+> [!IMPORTANT]
+> **꼭 "Fork"로 설치하세요.** 단순 복제가 아니라 Fork로 깔아야 이후 **자동 업데이트**(원본의 새 버전이 자동으로 흘러들어옴)가 동작합니다. (4단계 참고)
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fplusxdev%2Fbasic-note&env=NEXT_PUBLIC_SUPABASE_URL,NEXT_PUBLIC_SUPABASE_ANON_KEY&envDescription=Supabase%20%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8%EC%9D%98%20URL%EA%B3%BC%20anon%20key&envLink=https%3A%2F%2Fgithub.com%2Fplusxdev%2Fbasic-note%2Fblob%2Fmain%2FSETUP.md&project-name=basic-note&repository-name=basic-note)
+### 2-1. 저장소 Fork
 
-배포 마법사에서:
+1. 이 저장소 우측 상단 **Fork** 클릭 → 본인 계정으로 Fork 생성
+2. (기본값 그대로 두면 됩니다)
 
-1. **Create Git Repository** — 본인 GitHub에 복제본을 만듭니다.
-2. **Environment Variables** — 1-3에서 복사한 두 값을 붙여넣습니다.
+### 2-2. Vercel에 배포
+
+1. [vercel.com/new](https://vercel.com/new) → **Import Git Repository** 에서 방금 만든 본인 **Fork**(`<본인>/basic-note`)를 선택
+2. **Environment Variables** 에 1-3에서 복사한 두 값을 입력:
+
+   | Key | Value |
+   |-----|-------|
+   | `NEXT_PUBLIC_SUPABASE_URL` | (Project URL) |
+   | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | (anon public 키) |
+
 3. **Deploy** 클릭 → 1~2분 후 배포 완료 🎉
 
 > [!CAUTION]
@@ -131,16 +141,31 @@
 
 ---
 
-## 🔄 업데이트 받기
+## 🔄 4단계 — 자동 업데이트 켜기 (한 번만)
 
-새 버전이 나와도 **재설치·재로그인은 필요 없습니다.**
+원본(basic note)에 새 버전이 나오면 **본인 Fork가 자동으로 따라가고, 사용자는 손댈 게 없게** 만드는 단계입니다. 한 번만 설정하면 끝입니다.
 
-- **운영자(배포자)**: 원본 저장소의 변경을 본인 저장소에 반영(Sync fork 또는 pull)하면 Vercel이 자동 재배포합니다.
-- **사용자**: **온라인 상태로 앱을 한 번 열면** Service Worker가 새 버전을 자동 감지·교체합니다(이전 캐시 정리 포함). 새로고침 한 번이면 최신 버전으로 동작합니다.
+1. [github.com/apps/pull](https://github.com/apps/pull) 접속 → **Install**
+2. 방금 만든 본인 **Fork(`<본인>/basic-note`)** 를 선택해 설치
+
+이게 전부입니다. 이제 업데이트는 이렇게 흐릅니다:
+
+```
+원본에 새 버전 push
+  → (Pull 봇이) 본인 Fork에 자동 동기화
+  → Vercel이 자동 재배포
+  → 사용자 브라우저: 진입 시 "업데이트 중" 화면 / 사용 중엔 "새 버전" 배너 → 끝
+```
+
+- **재설치·재로그인 불필요**, 데이터는 기기 로컬(IndexedDB)에 있어 그대로 보존됩니다.
+- 사용자가 업데이트를 받으려면 **온라인 1회 접속**만 필요하고, 이후 오프라인에서도 정상 동작합니다.
+
+> [!WARNING]
+> **DB 스키마가 바뀌는 릴리스**(드묾)는 코드만 자동 반영되고 테이블 변경은 자동이 아닙니다.
+> 그런 릴리스에는 별도 공지로 안내하며, [`supabase/setup.sql`](./supabase/setup.sql)을 **다시 실행**하면 됩니다(멱등이라 안전).
 
 > [!NOTE]
-> 데이터는 기기의 로컬 저장소(IndexedDB)에 있어 업데이트 후에도 그대로 보존됩니다.
-> 업데이트를 받으려면 **최초 1회 온라인 접속**만 필요하고, 이후에는 오프라인에서도 정상 동작합니다.
+> Pull 봇은 본인 Fork를 원본과 **동일하게** 유지합니다(hard reset). Fork의 코드를 직접 수정하지 마세요 — 설정값은 코드가 아니라 Vercel 환경변수에 있습니다.
 
 ---
 
