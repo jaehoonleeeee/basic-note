@@ -191,6 +191,12 @@ const ko = {
 
   // ── Placeholders ───────────────────────────────────
   "placeholder.title": "제목 없음",
+
+  // ── Update ─────────────────────────────────────────
+  "update.updating": "최신 버전으로 업데이트하고 있어요",
+  "update.subtitle": "잠시만 기다려 주세요",
+  "update.available": "새 버전이 나왔어요",
+  "update.refresh": "지금 업데이트",
 };
 
 const en: typeof ko = {
@@ -384,6 +390,12 @@ const en: typeof ko = {
 
   // ── Placeholders ───────────────────────────────────
   "placeholder.title": "Untitled",
+
+  // ── Update ─────────────────────────────────────────
+  "update.updating": "Updating to the latest version",
+  "update.subtitle": "Just a moment",
+  "update.available": "A new version is available",
+  "update.refresh": "Update now",
 };
 
 export type TranslationKey = keyof typeof ko;

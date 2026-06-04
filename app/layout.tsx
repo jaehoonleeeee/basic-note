@@ -7,6 +7,7 @@ import { CryptoProvider } from "@/components/providers/crypto-provider";
 import { AuthGate } from "@/components/providers/auth-gate";
 import { LanguageProvider } from "@/components/providers/language-provider";
 import { SwRegister } from "@/components/providers/sw-register";
+import { UpdateGate } from "@/components/providers/update-gate";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -44,7 +45,8 @@ export default function RootLayout({
         <meta name="referrer" content="no-referrer" />
         <meta name="theme-color" content="#f7f7f8" media="(prefers-color-scheme: light)" />
         <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)" />
-        <link rel="icon" href="/icons/icon.svg" type="image/svg+xml" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png" />
         <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
         <link
           rel="stylesheet"
@@ -61,6 +63,7 @@ export default function RootLayout({
           <SwRegister />
           <DbProvider>
             <LanguageProvider>
+              <UpdateGate />
               <CryptoProvider>
                 <AuthGate>{children}</AuthGate>
               </CryptoProvider>

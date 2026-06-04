@@ -148,7 +148,7 @@ export default function CategoriesPage() {
 
   const handleCreateNote = async () => {
     const noteId = await createNote(null);
-    if (noteId) router.push(`/notes/${noteId}`);
+    if (noteId) router.push(`/notes/note?id=${noteId}`);
   };
 
   const handleEditCategory = (id: string, name: string) => {

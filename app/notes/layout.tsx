@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import {
   SidebarProvider,
   SidebarInset,
@@ -27,6 +29,17 @@ function StorageWatcher() {
   return null;
 }
 
+// Warm the editor route while online so its JS chunk + RSC are cached by the
+// service worker before the user goes offline. /notes/note is navigated to via
+// router.push (not <Link>), so it isn't auto-prefetched otherwise.
+function EditorRoutePrewarm() {
+  const router = useRouter();
+  useEffect(() => {
+    router.prefetch("/notes/note");
+  }, [router]);
+  return null;
+}
+
 export default function NotesLayout({
   children,
 }: {
@@ -37,6 +50,7 @@ export default function NotesLayout({
       <GlobalLoadingProvider>
         <NotesCountProvider>
           <StorageWatcher />
+          <EditorRoutePrewarm />
           <SidebarProvider>
             <AppSidebar />
             <SidebarInset>

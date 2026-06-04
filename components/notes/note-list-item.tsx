@@ -80,7 +80,7 @@ export function NoteListItem({
   return (
     <Card
       className="transition-colors hover:bg-accent/50 cursor-pointer"
-      onClick={() => router.push(`/notes/${note.id}`)}
+      onClick={() => router.push(`/notes/note?id=${note.id}`)}
     >
       <CardHeader>
         <div className="flex items-baseline gap-2 min-w-0">

@@ -14,7 +14,10 @@ export function SwRegister() {
       return;
     }
 
-    navigator.serviceWorker.register("/sw.js").catch(() => {});
+    // Version the SW script URL so each deploy installs a fresh worker
+    // (new cache name → old caches purged, shell re-precached).
+    const version = process.env.NEXT_PUBLIC_APP_VERSION || "dev";
+    navigator.serviceWorker.register(`/sw.js?v=${version}`).catch(() => {});
   }, []);
 
   return null;

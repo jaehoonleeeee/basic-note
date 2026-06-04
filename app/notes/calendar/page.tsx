@@ -42,7 +42,7 @@ export default function CalendarPage() {
 
   const handleCreate = async () => {
     const noteId = await createNote(null);
-    if (noteId) router.push(`/notes/${noteId}`);
+    if (noteId) router.push(`/notes/note?id=${noteId}`);
   };
 
   return (

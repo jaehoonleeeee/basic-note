@@ -58,7 +58,7 @@ export function NoteList({
 
   const handleCreate = async () => {
     const noteId = await createNote(categoryId ?? null);
-    if (noteId) router.push(`/notes/${noteId}`);
+    if (noteId) router.push(`/notes/note?id=${noteId}`);
   };
 
   const handleFirstConfirm = () => {
