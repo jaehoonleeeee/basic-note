@@ -147,6 +147,12 @@
 
 1. [github.com/apps/pull](https://github.com/apps/pull) 접속 → **Install**
 2. 방금 만든 본인 **Fork(`<본인>/basic-note`)** 를 선택해 설치
+3. **Vercel → 본인 프로젝트 → Settings → Security → `Git Fork Protection` 끄기(Disable)**
+
+> [!IMPORTANT]
+> **3번은 꼭 해야 합니다.** Pull 봇이 동기화하는 커밋의 작성자는 원본 제작자(= 본인 Vercel 팀 멤버가 아님)이기 때문에, Vercel이 기본적으로 그 배포를 **수동 승인 대기(`awaiting authorization`)** 로 막습니다. 끄지 않으면 코드는 Fork에 들어와도 **웹 배포가 갱신되지 않습니다.**
+>
+> 이 앱은 끄는 게 안전합니다 — 보호 대상인 환경변수 2개가 모두 `NEXT_PUBLIC_` 접두사라 **어차피 브라우저에 공개되는 값**이고(시크릿 아님), 실제 보안은 E2E 암호화 + RLS로 지킵니다.
 
 이게 전부입니다. 이제 업데이트는 이렇게 흐릅니다:
 
@@ -177,6 +183,8 @@
 | 콘솔에 `%0A` 포함 WebSocket 재연결 반복 | 환경변수 값 끝에 줄바꿈이 들어감. Vercel → Settings → Environment Variables에서 두 값을 공백 없이 다시 저장 후 재배포. |
 | "복호화 실패" 항목이 보임 | 다른 마스터 키로 암호화된 데이터가 섞임. 보통 dev/prod가 같은 Supabase를 공유할 때 발생. 개발용 Supabase를 분리하세요. |
 | 첫 화면에 비밀번호 설정이 아니라 잠금/복구 화면이 뜸 | 해당 Supabase에 이미 다른 비밀번호로 만든 데이터가 있습니다. 그 비밀번호로 unlock하거나, 설정에서 전체 초기화 후 다시 시작하세요. |
+| GitHub Fork는 최신인데 웹 앱이 옛 버전 그대로 / 배포가 `awaiting authorization` | **Git Fork Protection**이 켜져 있어 Pull 봇 동기화 커밋의 배포가 막힌 것. **Settings → Security → `Git Fork Protection` 끄기**(4단계 3번). 이미 막힌 배포는 Vercel **Deployments → Create Deployment → `main`** 으로 한 번 올리거나, 막힌 배포의 **Authorize** 버튼을 누르면 해제됩니다. |
+| 오프라인에서 노트 진입/생성이 안 됨 (새 배포 직후) | 새 버전 코드를 아직 못 받은 상태. **온라인에서 앱을 한 번 열면** 서비스워커가 새 버전을 받아 캐시하며, 이후 오프라인에서 정상 동작합니다. |
 | 빌드 실패 | Node 18+ 필요. Vercel은 기본 충족. 로컬이면 `node -v` 확인. |
 
 > [!TIP]
