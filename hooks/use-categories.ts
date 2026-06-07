@@ -230,6 +230,43 @@ export function useCategories() {
     [isUnlocked, encryptText]
   );
 
+  // Reorder a category among its siblings (same parentId). The fractional
+  // index is recomputed from the post-move neighbours so only the dragged row
+  // is rewritten — siblings keep their existing keys.
+  const reorderCategory = useCallback(
+    async (activeId: string, overId: string) => {
+      if (!isUnlocked || activeId === overId) return;
+
+      const active = await db.categories.get(activeId);
+      if (!active) return;
+
+      const siblings = (await db.categories.orderBy("sortOrder").toArray())
+        .filter((c) => !c.deletedAt && c.parentId === active.parentId);
+
+      const oldIndex = siblings.findIndex((c) => c.id === activeId);
+      const newIndex = siblings.findIndex((c) => c.id === overId);
+      if (oldIndex < 0 || newIndex < 0 || oldIndex === newIndex) return;
+
+      // Move activeId to overId's slot.
+      const reordered = [...siblings];
+      const [moved] = reordered.splice(oldIndex, 1);
+      reordered.splice(newIndex, 0, moved);
+
+      const pos = reordered.findIndex((c) => c.id === activeId);
+      const before = pos > 0 ? reordered[pos - 1].sortOrder : null;
+      const after = pos < reordered.length - 1 ? reordered[pos + 1].sortOrder : null;
+      const newOrder = getOrderBetween(before, after);
+
+      await db.categories.update(activeId, {
+        sortOrder: newOrder,
+        updatedAt: Date.now(),
+      });
+      const updated = await db.categories.get(activeId);
+      if (updated) syncPushEntity("category", updated);
+    },
+    [isUnlocked]
+  );
+
   const deleteCategory = useCallback(async (id: string) => {
     const now = Date.now();
     // Soft delete category and move its notes to uncategorized
@@ -291,6 +328,7 @@ export function useCategories() {
     isLoading,
     createCategory,
     updateCategory,
+    reorderCategory,
     deleteCategory,
     deleteCategoryWithNotes,
   };

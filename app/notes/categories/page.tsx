@@ -26,7 +26,23 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from "@plus-experience/design-system/ui/alert-dialog";
-import { Plus, FolderTree, FileText, Folder, MoreVertical, Pencil, Trash2 } from "lucide-react";
+import { Plus, FolderTree, FileText, Folder, MoreVertical, Pencil, Trash2, GripVertical } from "lucide-react";
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  KeyboardSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  useSortable,
+  sortableKeyboardCoordinates,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { toast } from "sonner";
 import { useLoadingIndicator } from "@/components/providers/global-loading";
 import { useCategories } from "@/hooks/use-categories";
@@ -44,12 +60,14 @@ function CategoryBranch({
   onEditCategory,
   onDeleteCategory,
   noNotesLabel,
+  dragHandle,
 }: {
   node: CategoryTreeNode;
   allNotes: DecryptedNote[];
   onEditCategory: (id: string, name: string) => void;
   onDeleteCategory: (id: string, name: string) => void;
   noNotesLabel: string;
+  dragHandle?: React.ReactNode;
 }) {
   const { t } = useLanguage();
   const categoryNotes = allNotes.filter((n) => n.categoryId === node.id);
@@ -63,27 +81,30 @@ function CategoryBranch({
     <AccordionBlockItem value={node.id}>
       <AccordionBlockTrigger
         action={
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <div role="button" tabIndex={0} className="inline-flex h-6 w-6 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-accent-foreground cursor-pointer">
-                <MoreVertical className="h-4 w-4" />
-              </div>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="min-w-[166px]">
-              <DropdownMenuItem onClick={() => onEditCategory(node.id, node.name)}>
-                <Pencil className="h-4 w-4" />
-                {t("common.edit")}
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                variant="destructive"
-                onClick={() => onDeleteCategory(node.id, node.name)}
-              >
-                <Trash2 className="h-4 w-4" />
-                {t("common.delete")}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div className="flex items-center gap-1">
+            {dragHandle}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <div role="button" tabIndex={0} className="inline-flex h-6 w-6 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-accent-foreground cursor-pointer">
+                  <MoreVertical className="h-4 w-4" />
+                </div>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="min-w-[166px]">
+                <DropdownMenuItem onClick={() => onEditCategory(node.id, node.name)}>
+                  <Pencil className="h-4 w-4" />
+                  {t("common.edit")}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  variant="destructive"
+                  onClick={() => onDeleteCategory(node.id, node.name)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                  {t("common.delete")}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         }
       >
         <div className="flex items-center gap-2">
@@ -122,8 +143,56 @@ function CategoryBranch({
   );
 }
 
+// Root-level branch with drag-to-reorder. Wraps the branch in a sortable
+// container (AccordionBlockItem isn't a forwardRef, so the sortable node ref
+// lives on the wrapper) and feeds a grip handle into the trigger's action slot.
+function SortableCategoryBranch(props: {
+  node: CategoryTreeNode;
+  allNotes: DecryptedNote[];
+  onEditCategory: (id: string, name: string) => void;
+  onDeleteCategory: (id: string, name: string) => void;
+  noNotesLabel: string;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    setActivatorNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: props.node.id });
+
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 10 : undefined,
+    position: "relative",
+  };
+
+  const handle = (
+    <div
+      ref={setActivatorNodeRef}
+      {...attributes}
+      {...listeners}
+      role="button"
+      aria-label="순서 변경"
+      className="inline-flex h-6 w-6 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-accent-foreground cursor-grab active:cursor-grabbing touch-none"
+    >
+      <GripVertical className="h-4 w-4" />
+    </div>
+  );
+
+  return (
+    <div ref={setNodeRef} style={style}>
+      <CategoryBranch {...props} dragHandle={handle} />
+    </div>
+  );
+}
+
 export default function CategoriesPage() {
-  const { tree, categories, isLoading: categoriesLoading, createCategory, updateCategory, deleteCategoryWithNotes } = useCategories();
+  const { tree, categories, isLoading: categoriesLoading, createCategory, updateCategory, reorderCategory, deleteCategoryWithNotes } = useCategories();
   const { notes, isLoading: notesLoading, createNote, moveToCategory } = useNotes();
   const isLoading = categoriesLoading || notesLoading;
   useLoadingIndicator("categories-page", isLoading);
@@ -141,6 +210,20 @@ export default function CategoriesPage() {
   // deleteTarget을 null로 초기화하지 않도록 동기적으로 표시하는 플래그. state closure
   // 로는 같은 render 안에서 showSecondConfirm이 아직 false라 race가 난다.
   const advancingToStep2Ref = useRef(false);
+
+  // Pointer drag needs an 8px threshold so taps still toggle the accordion;
+  // keyboard reordering for a11y.
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      reorderCategory(String(active.id), String(over.id));
+    }
+  };
 
   const uncategorizedNotes = notes.filter((n) => !n.categoryId);
   const hotUncategorized = useNotesCount(null);
@@ -204,16 +287,27 @@ export default function CategoriesPage() {
         </div>
       ) : (
         <AccordionBlock type="multiple">
-          {tree.map((node) => (
-            <CategoryBranch
-              key={node.id}
-              node={node}
-              allNotes={notes}
-              onEditCategory={handleEditCategory}
-              onDeleteCategory={handleDeleteCategory}
-              noNotesLabel={t("categories.noNotes")}
-            />
-          ))}
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={tree.map((n) => n.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              {tree.map((node) => (
+                <SortableCategoryBranch
+                  key={node.id}
+                  node={node}
+                  allNotes={notes}
+                  onEditCategory={handleEditCategory}
+                  onDeleteCategory={handleDeleteCategory}
+                  noNotesLabel={t("categories.noNotes")}
+                />
+              ))}
+            </SortableContext>
+          </DndContext>
 
           {uncategorizedCount > 0 && (
             <AccordionBlockItem value="__uncategorized">
