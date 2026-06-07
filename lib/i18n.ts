@@ -133,7 +133,7 @@ const ko = {
   "settings.lockNow": "지금 잠그기",
   "settings.lockNowDesc": "즉시 앱을 잠금 상태로 전환합니다",
   "settings.lockButton": "잠금",
-  "settings.shortcuts": "키보드 단축키",
+  "settings.shortcuts": "단축키",
   "shortcuts.bold": "굵게",
   "shortcuts.italic": "기울임",
   "shortcuts.underline": "밑줄",
