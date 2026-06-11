@@ -24,24 +24,32 @@ import { loadTracking, type InstallerStatus } from "./lib";
 // Never cached, never prerendered.
 export const dynamic = "force-dynamic";
 
+type BadgeVariant = "default" | "secondary" | "destructive" | "outline";
+
+// Solid, high-contrast chips. The DS `secondary`/`outline` variants render too
+// faint here (read as indented text), so middle states get explicit token-based
+// color chips instead.
 const STATUS_META: Record<
   InstallerStatus,
-  { label: string; variant: "default" | "secondary" | "destructive" | "outline"; note: string }
+  { label: string; variant: BadgeVariant; className?: string; note: string }
 > = {
   "up-to-date": { label: "최신", variant: "default", note: "코드·라이브 모두 최신" },
   "live-stale": {
     label: "라이브 구버전",
-    variant: "secondary",
+    variant: "outline",
+    className: "border-transparent bg-amber-500/20 text-amber-700 dark:text-amber-300",
     note: "코드는 받았으나 라이브 미반영 — Promote 필요 / 빌드중",
   },
   unreachable: {
     label: "응답 없음",
     variant: "outline",
+    className: "border-transparent bg-muted text-muted-foreground",
     note: "도메인 등록됨, /api/version 도달 실패",
   },
   "no-domain": {
     label: "코드 최신",
-    variant: "secondary",
+    variant: "outline",
+    className: "border-transparent bg-emerald-500/15 text-emerald-700 dark:text-emerald-300",
     note: "코드는 최신 · 라이브 미확인 (도메인 미등록)",
   },
   "code-behind": {
@@ -114,11 +122,11 @@ export default async function AdminPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>설치자</TableHead>
-                  <TableHead>상태</TableHead>
-                  <TableHead>코드</TableHead>
-                  <TableHead>라이브</TableHead>
-                  <TableHead>마지막 동기화</TableHead>
+                  <TableHead className="px-4 py-4">설치자</TableHead>
+                  <TableHead className="px-4 py-4">상태</TableHead>
+                  <TableHead className="px-4 py-4">코드</TableHead>
+                  <TableHead className="px-4 py-4">라이브</TableHead>
+                  <TableHead className="px-4 py-4">마지막 동기화</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -126,39 +134,41 @@ export default async function AdminPage() {
                   const meta = STATUS_META[r.status];
                   return (
                     <TableRow key={`${r.owner}/${r.repo}`}>
-                      <TableCell>
+                      <TableCell className="px-4 py-5 align-top">
                         <div className="font-medium">{r.owner}</div>
-                        <div className="text-xs text-muted-foreground">
+                        <div className="mt-0.5 text-xs text-muted-foreground">
                           {r.repo}
                         </div>
                       </TableCell>
-                      <TableCell>
-                        <Badge variant={meta.variant}>{meta.label}</Badge>
-                        <div className="mt-1 text-xs text-muted-foreground">
+                      <TableCell className="px-4 py-5 align-top">
+                        <Badge variant={meta.variant} className={meta.className}>
+                          {meta.label}
+                        </Badge>
+                        <div className="mt-1.5 max-w-[18rem] text-xs leading-relaxed text-muted-foreground">
                           {meta.note}
                         </div>
                       </TableCell>
-                      <TableCell className="text-sm">
+                      <TableCell className="px-4 py-5 align-top text-sm">
                         {r.aheadBy === null ? (
                           <span className="text-muted-foreground">확인불가</span>
                         ) : r.aheadBy === 0 ? (
-                          <span className="text-muted-foreground">최신</span>
+                          <span className="text-foreground">최신</span>
                         ) : (
-                          <span className="text-destructive">
+                          <span className="font-medium text-destructive">
                             {r.aheadBy}커밋 뒤
                           </span>
                         )}
                       </TableCell>
-                      <TableCell className="text-sm">
+                      <TableCell className="px-4 py-5 align-top text-sm">
                         {r.domain ? (
                           r.liveSemver ? (
-                            <>
-                              <span className="font-mono">v{r.liveSemver}</span>
-                              <span className="font-mono text-xs text-muted-foreground">
-                                {" "}
-                                · {short(r.liveSha)}
+                            <span className="font-mono">
+                              v{r.liveSemver}
+                              <span className="text-xs text-muted-foreground">
+                                {" · "}
+                                {short(r.liveSha)}
                               </span>
-                            </>
+                            </span>
                           ) : (
                             <span className="text-muted-foreground">응답없음</span>
                           )
@@ -166,7 +176,7 @@ export default async function AdminPage() {
                           <span className="text-muted-foreground">—</span>
                         )}
                       </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
+                      <TableCell className="px-4 py-5 align-top text-sm text-muted-foreground">
                         {fmtDate(r.pushedAt)}
                       </TableCell>
                     </TableRow>
